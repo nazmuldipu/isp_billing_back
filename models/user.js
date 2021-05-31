@@ -26,8 +26,12 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.methods.generateAuthToken = function () {
+  let companyId;
+  if (this.company && this.company._id) {
+    companyId = this.company._id;
+  }
   const token = jwt.sign(
-    { _id: this._id, role: this.role },
+    { _id: this._id, role: this.role, companyId },
     config.get("jwtPrivateKey")
   );
   return token;
