@@ -2,7 +2,8 @@ const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const express = require("express");
 const router = express.Router();
-const { User, validate, validateProfile } = require("../models/user");
+const { User, validate } = require("../models/user");
+const { Company } = require("../models/company");
 const validateObjectId = require("../middleware/validateObjectId");
 const validator = require("../middleware/validate");
 const auth = require("../middleware/auth");
@@ -19,28 +20,27 @@ router.get("/me", auth, async (req, res) => {
 //------------------REGISTER-----------------
 router.post("/", [validator(validate)], async (req, res) => {
   //Phone validation
-  let dbUser = await User.findOne({ phone: req.body.phone });
+  let dbUser = await User.findOne({ email: req.body.email });
   if (dbUser)
     return res
       .status(400)
-      .send(`User with this phone \'${req.body.phone}\'already register`);
-
-  let user = new User(_.pick(req.body, ["name", "phone", "password"]));
+      .send(`User with this email \'${req.body.email}\'already register`);
+  console.log(dbUser);
+  let user = new User(_.pick(req.body, ["name", "email", "password"]));
 
   //Email validation
-  let email = req.body.email;
-  if (email && email.length) {
-    let dbUser = await User.findOne({ email: req.body.email });
+  let phone = req.body.phone;
+  if (phone && phone.length) {
+    let dbUser = await User.findOne({ phone: req.body.phone });
     if (dbUser)
       return res
         .status(400)
-        .send(`User with this email \'${req.body.email}\'already register`);
+        .send(`User with this phone \'${req.body.phone}\'already exists`);
 
-    user.email = email;
+    user.phone = phone;
   }
 
-  user.otp = Math.random().toFixed(6).substr(`-${6}`);
-  user.active = false;
+  user.active = true;
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
   user.role = "USER";
@@ -54,48 +54,6 @@ router.post("/", [validator(validate)], async (req, res) => {
     .send(_.pick(user, ["_id", "name", "phone", "email"]));
 });
 
-/*Update user profile self with id, method = PUT*/
-router.put("/update", [auth, validator(validateProfile)], async (req, res) => {
-  const user = await User.findById(req.user._id);
-  const resp = await User.updateOne(
-    { _id: user._id },
-    {
-      $set: {
-        name: req.body.name,
-        email: req.body.email,
-        cus_add1: req.body.cus_add1,
-        cus_add2: req.body.cus_add2,
-        cus_city: req.body.cus_city,
-        cus_country: req.body.cus_country,
-        deliveryInstruction: req.body.deliveryInstruction,
-      },
-    }
-  );
-  res.send(resp);
-})
-
-/*Update user profile self with id, method = PUT*/
-router.put("/updateProfile/:id", [auth, admin, validator(validateProfile)], async (req, res) => {
-  let user = await User.findById(req.params.id);
-  const resp = await User.updateOne(
-    { _id: user._id },
-    {
-      $set: {
-        name: req.body.name,
-        email: req.body.email,
-        cus_add1: req.body.cus_add1,
-        cus_add2: req.body.cus_add2,
-        cus_city: req.body.cus_city,
-        cus_country: req.body.cus_country,
-        deliveryInstruction: req.body.deliveryInstruction,
-      },
-    }
-  );
-
-  user = await User.findById(req.params.id);
-  res.send(user);
-})
-
 /*Update a User for request with id, method = PUT*/
 router.put("/:id", [auth, admin, validateObjectId, validator(validate)],
   async (req, res) => {
@@ -103,7 +61,7 @@ router.put("/:id", [auth, admin, validateObjectId, validator(validate)],
     if (!user) {
       return res.status(404).send("The User with the given ID was not found");
     }
-    user = await User.updateOne(
+    await User.updateOne(
       { _id: user._id },
       {
         $set: {
@@ -114,6 +72,7 @@ router.put("/:id", [auth, admin, validateObjectId, validator(validate)],
         },
       }
     );
+    user = await User.findById(req.params.id);
     res.send(user);
   }
 );
@@ -133,7 +92,7 @@ router.get("/", [auth, admin, pagiCheck], async (req, res) => {
     : {};
 
   const options = {
-    select: "name phone email role active",
+    select: "name phone email company role active",
     sort: req.query.sort,
     page: req.query.page,
     limit: req.query.limit,
@@ -164,41 +123,11 @@ router.patch("/activate/:id", [auth, admin, validateObjectId], async (req, res) 
   }
   await user.save();
   res.send(user);
-}
-);
-
-router.patch('/otpActivate', async (req, res) => {
-  const user = await User.findOne({ "phone": req.body.phone });
-  if (!user) return res.status(404).send("The user with the given phone, not found");
-  if (user.otp !== req.body.otp) return res.status(403).send("OTP didn't matched!");
-  await User.updateOne({ phone: user.phone }, { $set: { active: true } });
-  res.send({ message: "user activated" });
-})
-
-// router.patch('/sendOTP/:phone', async (req, res) => {
-//   const user = await User.findOne({ "phone": req.params.phone });
-//   if (!user) return res.status(404).send("The user with the given phone, not found");
-//   const otp = Math.random().toFixed(6).substr(`-${6}`);
-//   await User.updateOne({ phone: user.phone }, { $set: { active: false, otp } });
-//   sendOTP('+88' + user.phone, otp);
-//   res.send({ message: "otp sent" });
-// })
-
-router.patch('/password-reset', async (req, res) => {
-  const user = await User.findOne({ "phone": req.body.phone });
-  if (!user) return res.status(404).send("The user with the given phone, not found");
-  if (user.otp !== req.body.otp) return res.status(403).send("OTP didn't matched!");
-
-  const salt = await bcrypt.genSalt(10);
-  const password = await bcrypt.hash(req.body.password, salt);
-  await User.updateOne({ phone: user.phone }, { $set: { active: true, password } });
-  res.send({ message: "password reset successfully" });
-})
+});
 
 /*CHANGE password from admin with method = PATCH*/
 router.patch("/change-password/:id", [auth, admin, validateObjectId], async (req, res) => {
   const user = await User.findById(req.params.id);
-
   if (!user)
     return res.status(404).send("The user with the given ID was not found");
 
@@ -210,7 +139,7 @@ router.patch("/change-password/:id", [auth, admin, validateObjectId], async (req
   user.password = await bcrypt.hash(req.body.password, salt);
   await user.save(user);
 
-  res.send(_.pick(user, ["_id", "name", "phone", "email"]));
+  res.send(_.pick(user, ["_id", "name", "phone", "email", "role"]));
 }
 );
 
@@ -240,5 +169,49 @@ router.patch("/changePassword", [auth], async (req, res) => {
 
   res.send(user);
 });
+
+/*Assign company to user method = PATCH*/
+router.patch('/assignCompany/:id', [auth, admin], async (req, res) => {
+  let user = await User.findById(req.params.id);
+  if (!user)
+    return res.status(404).send("The user with the given ID was not found");
+
+  const company = await Company.findById(req.body.companyId);
+  if (!company)
+    return req.status(404).send('The company with the give ID was not found');
+
+  await User.updateOne(
+    { _id: user._id },
+    {
+      $set: {
+        role: "COMPANY",
+        company: { _id: company._id, name: company.name, slug: company.slug }
+      },
+    }
+  )
+
+  user = await User.findById(req.params.id);
+  res.send(user);
+});
+
+/*Remove company from user, method = PATCH*/
+router.patch('/removeCompany/:id', [auth, admin], async (req, res) => {
+  let user = await User.findById(req.params.id);
+  if (!user)
+    return res.status(404).send("The user with the given ID was not found");
+
+  await User.updateOne(
+    { _id: user._id },
+    {
+      $set: {
+        role: "USER",
+        company: {}
+      },
+    }
+  );
+
+  user = await User.findById(req.params.id);
+  res.send(user);
+})
 
 module.exports = router;
