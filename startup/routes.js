@@ -5,6 +5,7 @@ const error = require("../middleware/error");
 const authRoutes = require("../routes/auth");
 const companyRoutes = require('../routes/companies');
 const groupRoutes = require('../routes/groups');
+const personRoutes = require("../routes/persons");
 
 module.exports = function (app) {
   app.use(accesscontrol);
@@ -13,5 +14,6 @@ module.exports = function (app) {
   app.use("/api/users", userRoutes);
   app.use("/api/companies", companyRoutes);
   app.use("/api/groups", groupRoutes);
+  app.use("/api/persons", personRoutes);
   app.use(error);
 };

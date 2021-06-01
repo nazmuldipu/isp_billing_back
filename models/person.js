@@ -1,26 +1,29 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
 const mongoosePaginate = require('mongoose-paginate-v2');
 const { objSchema } = require('./common_schemas')
 
-const groupSchema = new mongoose.Schema({
+const personSchema = new mongoose.Schema({
     company: { type: objSchema, required: true },
+    group: { type: objSchema, required: true },
     serial: { type: Number, required: true },
     name: { type: String, required: true, minlength: 3 },
     slug: { type: String, minlength: 3 },
     createdAt: { type: Date, required: true, default: Date.now, },
 });
 
-groupSchema.plugin(mongoosePaginate);
-const Group = mongoose.model("Group", groupSchema);
+personSchema.plugin(mongoosePaginate);
+const Person = mongoose.model("Person", personSchema);
 
-function validateGroup(group) {
+function validatePerson(person) {
     const schema = Joi.object({
+        groupId: Joi.objectId().required(),
         serial: Joi.number().min(0).required(),
         name: Joi.string().min(3).max(50).required(),
     });
-    return schema.validate(group);
+    return schema.validate(person);
 }
 
-exports.Group = Group;
-exports.validate = validateGroup;
+exports.Person = Person;
+exports.validate = validatePerson;
