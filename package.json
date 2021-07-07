@@ -4,7 +4,7 @@
   "description": "This project for ISP Billing back server",
   "main": "index.js",
   "scripts": {
-    "start": "node index",
+    "start": "node isp_billing",
     "test": "jest --verbose --testEnvironment=node --detectOpenHandles --forceExit --runInBand tests/curr"
   },
   "author": "Nazmul Alam",
