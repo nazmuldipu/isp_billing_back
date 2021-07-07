@@ -1,7 +1,10 @@
 const express = require("express");
 const app = express();
-const port = process.env.PORT || 2087;
 const winston = require("winston");
+
+const config = require("config");
+const cport = config.get("port");
+const port = process.env.PORT || cport || 2087;
 
 require("./startup/logging")();
 require("./startup/routes")(app);
