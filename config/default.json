@@ -1,4 +1,4 @@
 {
-  "jwtPrivateKey": "abc",
-  "db": "mongodb://localhost/academy_sms"
+  "jwtPrivateKey": "isp_billing",
+  "db": "mongodb://localhost/isp_billing"
 }

@@ -1,7 +1,7 @@
 {
-  "name": "academy_sms_back",
+  "name": "isp_billing_back",
   "version": "1.0.0",
-  "description": "This project for Academy SMS back server",
+  "description": "This project for ISP Billing back server",
   "main": "index.js",
   "scripts": {
     "start": "node index",
