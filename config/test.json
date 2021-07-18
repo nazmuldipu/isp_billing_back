@@ -1,5 +1,5 @@
 {
   "jwtPrivateKey": "isp_billing",
   "db": "mongodb://localhost/isp_billing_test",
-  "port": 80
+  "port": 2087
 }
