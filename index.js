@@ -11,7 +11,7 @@ require("./startup/routes")(app);
 require("./startup/db")();
 
 app.get("/", (req, res) => {
-  res.send({ message: "Weclome to Node REST API" });
+  res.send({ message: "Weclome to ISP Billing REST API" });
 });
 
 const server = app.listen(port, () => {
