@@ -5,7 +5,7 @@ const error = require("../middleware/error");
 const authRoutes = require("../routes/auth");
 const companyRoutes = require('../routes/companies');
 const zoneRoutes = require('../routes/zones');
-const boxRoutes = require("../routes/boxs");
+const boxRoutes = require("../routes/boxes");
 
 module.exports = function (app) {
   app.use(accesscontrol);
@@ -14,6 +14,6 @@ module.exports = function (app) {
   app.use("/api/users", userRoutes);
   app.use("/api/companies", companyRoutes);
   app.use("/api/zones", zoneRoutes);
-  app.use("/api/boxs", boxRoutes);
+  app.use("/api/boxes", boxRoutes);
   app.use(error);
 };

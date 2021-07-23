@@ -54,8 +54,8 @@ router.get("/", [auth, company, pagiCheck], async (req, res) => {
         page: req.query.page,
         limit: req.query.limit,
     };
-    const boxs = await Box.paginate(query, options);
-    res.send(boxs);
+    const boxes = await Box.paginate(query, options);
+    res.send(boxes);
 });
 
 /*READ all box for request with method = GET*/
@@ -82,8 +82,8 @@ router.get("/zone/:id", [auth, company, pagiCheck], async (req, res) => {
         page: req.query.page,
         limit: req.query.limit,
     };
-    const boxs = await Box.paginate(query, options);
-    res.send(boxs);
+    const boxes = await Box.paginate(query, options);
+    res.send(boxes);
 });
 
 /*READ a Box for request with id, method = GET*/
