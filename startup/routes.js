@@ -6,6 +6,7 @@ const authRoutes = require("../routes/auth");
 const companyRoutes = require('../routes/companies');
 const zoneRoutes = require('../routes/zones');
 const boxRoutes = require("../routes/boxes");
+const clientsRoutes = require('../routes/clients');
 
 module.exports = function (app) {
   app.use(accesscontrol);
@@ -15,5 +16,6 @@ module.exports = function (app) {
   app.use("/api/companies", companyRoutes);
   app.use("/api/zones", zoneRoutes);
   app.use("/api/boxes", boxRoutes);
+  app.use("/api/clients", clientsRoutes);
   app.use(error);
 };
