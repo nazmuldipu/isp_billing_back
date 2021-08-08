@@ -31,6 +31,8 @@ router.post("/", pUpload, [auth, company, validator(validate)], async (req, res)
     if (req.fileValidationError) {
         DeleteImage(req.files);
         return res.status(404).send("File type not supported");
+    } else if(!req.files || !req.files[nid_f] || !req.files[nid_b] || !req.files[profile]){
+        return res.status(406).send("Required images not found");
     }
 
     //Check if Clients exists into database, if then remove images from space
@@ -41,7 +43,7 @@ router.post("/", pUpload, [auth, company, validator(validate)], async (req, res)
         if (req.files) DeleteImage(req.files);
         return res
             .status(400)
-            .send(`Client with this nid \'${req.body.name}\' already exist`);
+            .send(`Client with this nid \'${req.body.client_nid_number}\' already exist`);
     }
 
     let client = CleanObject({ ...req.body });
@@ -227,6 +229,57 @@ router.delete("/:id", [auth, company, validateObjectId], async (req, res) => {
     }
 
     res.send(client);
+});
+
+/* READ profile/:id a image for client = GET*/
+router.get("/profile/:id", validateObjectId, async (req, res) => {
+  //Check if client exists
+  const client = await Client.findById(req.params.id);
+  if (!client || !client.profile_url)
+    return res.status(404).send("The client with the given ID was not found");
+
+  //Check if client contain image
+  if (client.profile_url.length < 1)
+    return res
+      .status(404)
+      .send("The client with the given ID doesn't contain any profile image");
+
+  const profileUrl = path.join(__dirname, "..", client.profile_url);
+  res.sendFile(profileUrl);
+});
+
+/* READ nidFront/:id a image for client = GET*/
+router.get("/nidFront/:id", validateObjectId, async (req, res) => {
+    //Check if client exists
+    const client = await Client.findById(req.params.id);
+    if (!client || !client.nid_front_url)
+      return res.status(404).send("The client with the given ID was not found");
+  
+    //Check if client contain image
+    if (client.nid_front_url.length < 1)
+      return res
+        .status(404)
+        .send("The client with the given ID doesn't contain any profile image");
+  
+    const nid_front_url = path.join(__dirname, "..", client.nid_front_url);
+    res.sendFile(nid_front_url);
+});
+
+/* READ nidBack/:id a image for client = GET*/
+router.get("/nidBack/:id", validateObjectId, async (req, res) => {
+    //Check if client exists
+    const client = await Client.findById(req.params.id);
+    if (!client || !client.nid_back_url)
+      return res.status(404).send("The client with the given ID was not found");
+  
+    //Check if client contain image
+    if (client.nid_back_url.length < 1)
+      return res
+        .status(404)
+        .send("The client with the given ID doesn't contain any profile image");
+  
+    const nid_back_url = path.join(__dirname, "..", client.nid_back_url);
+    res.sendFile(nid_back_url);
 });
 
 module.exports = router;
