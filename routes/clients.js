@@ -85,13 +85,13 @@ router.get("/", pagiCheck, async (req, res) => {
             $or: [
                 { client_name: { $regex: param } },
                 { clinet_phone: { $regex: param } },
-                { client_email: { $regex: param } },
-                { client_username: { $regex: param } }
+                { client_username: { $regex: param } },
+                { connection_package: { $regex: param } }
             ],
         }
         : {};
     const options = {
-        select: "client_name client_father clinet_phone client_email client_username",
+        select: "client_name clinet_phone connection_package client_username ip_address status",
         sort: req.query.sort,
         page: req.query.page,
         limit: req.query.limit,

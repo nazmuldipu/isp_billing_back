@@ -54,7 +54,7 @@ const clientSchema = new mongoose.Schema({
     nid_back_url: { type: String, required: true },
     profile_url: { type: String, required: true },
     note: { type: String },
-
+    status: { type: Boolean, default: false },
     createdAt: { type: Date, required: true, default: Date.now, },
 });
 
