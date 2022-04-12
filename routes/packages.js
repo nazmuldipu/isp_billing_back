@@ -10,7 +10,7 @@ const { Company } = require('../models/company');
 
 /*Create a Package for request method = "POST" */
 router.post("/", [auth, company, validator(validate)], async (req, res) => {
-    const { serial, name } = req.body;
+    const { name, code, volume, price } = req.body;
 
     const company = await Company.findById(req.user.companyId);
     if (!company) return res.status(404).send("Company with provided id not found");
@@ -19,9 +19,9 @@ router.post("/", [auth, company, validator(validate)], async (req, res) => {
 
     let dbPackage = await Package.findOne({ 'company._id': req.user.companyId, slug })
     if (dbPackage)
-        return res.status(400).send(`Package/Class with this name \"${name}\" already exist`);
+        return res.status(400).send(`Package with this name \"${name}\" already exist`);
 
-    let package = new Package({ company: { _id: company._id, name: company.name, slug: company.slug }, serial, name, slug });
+    let package = new Package({ company: { _id: company._id, name: company.name, slug: company.slug }, name, slug, code, volume, price });
 
     package = await package.save();
     res.send(package);
@@ -45,7 +45,7 @@ router.get("/", [auth, company, pagiCheck], async (req, res) => {
         : { "company._id": req.user.companyId, };
 
     const options = {
-        select: "name serial company",
+        select: "name code volume price company",
         sort: req.query.sort,
         page: req.query.page,
         limit: req.query.limit,
@@ -69,7 +69,7 @@ router.get("/:id", [auth, company, validateObjectId], async (req, res) => {
 /*Update a Package for request with id, method = PUT*/
 router.put("/:id", [auth, company, validateObjectId, validator(validate)],
     async (req, res) => {
-        const { serial, name } = req.body;
+        const { name, code, volume, price  } = req.body;
 
         let package = await Package.findById(req.params.id);
         if (!package) {
@@ -84,7 +84,7 @@ router.put("/:id", [auth, company, validateObjectId, validator(validate)],
         await Package.updateOne(
             { _id: package._id },
             {
-                $set: { name, slug, serial },
+                $set: { name, slug, code, volume, price },
             }
         );
         package = await Package.findById(req.params.id);
